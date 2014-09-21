@@ -56,6 +56,9 @@
             // The container for the list of files. If undefined, it is set to
             // an element with class "files" inside of the widget element:
             filesContainer: undefined,
+            // The container for the progress bar. If undefined, it is set to
+            // an element with class "fileupload-progress" inside of the widget element:
+            progressBarContainer: undefined,
             // By default, files are appended to the files container.
             // Set the following option to true, to prepend files instead:
             prependFiles: false,
@@ -292,13 +295,13 @@
                 }
                 var $this = $(this),
                     progress = Math.floor(data.loaded / data.total * 100),
-                    globalProgressNode = $this.find('.fileupload-progress'),
+                    that = $this.data('blueimp-fileupload') || $this.data('fileupload'),
+                    globalProgressNode = that.options.progressBarContainer,
                     extendedProgressNode = globalProgressNode
                         .find('.progress-extended');
                 if (extendedProgressNode.length) {
                     extendedProgressNode.html(
-                        ($this.data('blueimp-fileupload') || $this.data('fileupload'))
-                            ._renderExtendedProgress(data)
+                        that._renderExtendedProgress(data)
                     );
                 }
                 globalProgressNode
@@ -317,7 +320,7 @@
                 var that = $(this).data('blueimp-fileupload') ||
                         $(this).data('fileupload');
                 that._resetFinishedDeferreds();
-                that._transition($(this).find('.fileupload-progress')).done(
+                that._transition(that.options.progressBarContainer).done(
                     function () {
                         that._trigger('started', e);
                     }
@@ -335,7 +338,7 @@
                     .done(function () {
                         that._trigger('stopped', e);
                     });
-                that._transition($(this).find('.fileupload-progress')).done(
+                that._transition(that.options.progressBarContainer).done(
                     function () {
                         $(this).find('.progress')
                             .attr('aria-valuenow', '0')
@@ -665,9 +668,19 @@
             }
         },
 
+        _initProgressBarContainer: function () {
+            var options = this.options;
+            if (options.progressBarContainer === undefined) {
+                options.progressBarContainer = this.element.find('.fileupload-progress');
+            } else if (!(options.progressBarContainer instanceof $)) {
+                options.progressBarContainer = $(options.fprogressBarContainer);
+            }
+        },
+
         _initSpecialOptions: function () {
             this._super();
             this._initFilesContainer();
+            this._initProgressBarContainer();
             this._initTemplates();
         },
 
